@@ -7,7 +7,7 @@ This sample Azure Resource Manager template deploys a Container App Environment 
 
 This application is only for testing logging when the Function App takes x number of minutes to complete and is not intended as a production application or as official instructions.
 
-The Slow*x*minuteHttpFunctions use Thread.Sleep to sleep for x numbr of minutes.
+The Slow*x*minuteHttpFunctions use Thread.Sleep to sleep for x number of minutes.
 
 - Slow5minuteHttpFunction: doesn't include a logging statement after the Thread.Sleep
 - Slow12minuteHttpFunction: doesn't include a logging statement after the Thread.Sleep
