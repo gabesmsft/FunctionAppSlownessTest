@@ -1,0 +1,137 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-08-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "defaultValue": "canadacentral",
+      "type": "String"
+    },
+    "workspaceName": {
+      "type": "string",
+      "defaultValue": "[concat('LAWorkspace-', uniqueString(resourceGroup().id))]",
+      "metadata": {
+        "description": "The name of the Log Analytics Workspace."
+      }
+    },
+    "environmentName": {
+      "type": "string",
+      "defaultValue": "[concat('ContainerAppEnv-', uniqueString(resourceGroup().id))]"
+    },
+    "functionappCI1": {
+      "type": "String",
+      "defaultValue": "docker.io/gfakedocker/functionappslownesstest:latest"
+    },
+    "functionapp1": {
+      "type": "String",
+      "defaultValue": "[concat('slownestest-', uniqueString(resourceGroup().id))]"
+    },
+    "storageAccountName": {
+      "type": "string",
+      "defaultValue": "[format('store{0}', uniqueString(resourceGroup().id))]",
+      "metadata": {
+        "description": "Name of the Storage Account"
+      }
+    },
+    "workloadProfileEnabled": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "If you set the workloadProfileEnabled parameter to true, a workload profile-enabled Container App Environment will be deployed, with a Consumption plan. If you set the workloadProfileEnabled parameter to false, a Consumption-only (non-workload profile-enabled) Container App Environment will be deployed."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2021-04-01",
+      "name": "[parameters('storageAccountName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "accessTier": "Hot"
+      }
+    },
+    {
+      "apiVersion": "2020-08-01",
+      "name": "[parameters('workspaceName')]",
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": 30
+      }
+    },
+    {
+      "apiVersion": "2023-05-01",
+      "name": "[parameters('environmentName')]",
+      "type": "Microsoft.App/managedEnvironments",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
+      ],
+      "properties": {
+        "appLogsConfiguration": {
+          "destination": "log-analytics",
+          "logAnalyticsConfiguration": {
+            "customerId": "[reference(concat('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName')), '2020-08-01').customerId]",
+            "sharedKey": "[listKeys(concat('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName')), '2020-08-01').primarySharedKey]"
+          }
+        },
+        "workloadProfiles": [
+          "[if(parameters('workloadProfileEnabled'), json('{\"workloadProfileType\": \"Consumption\", \"name\": \"Consumption\"}'),  json('null'))]"
+        ]
+      }
+    },
+    {
+      "name": "[parameters('functionapp1')]",
+      "type": "microsoft.app/containerapps",
+      "kind": "functionapp",
+      "apiVersion": "2025-02-02-preview",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.App/managedEnvironments', parameters('environmentName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+      ],
+      "properties": {
+        "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments/', parameters('environmentName'))]",
+        "workloadProfileName": "[if(parameters('workloadProfileEnabled'), 'Consumption', json('null'))]",		
+        "configuration": {
+            "secrets": [
+                {
+                    "name": "azurewebjobsstorage",
+                    "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', parameters('storageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2022-05-01').keys[0].value)]"
+                }
+            ],
+             "ingress": {
+                "external": true,
+                "targetPort": 80,
+                "transport": "Auto"
+             }
+		},
+        "template": {
+            "containers": [
+                {
+                    "image": "[parameters('functionappCI1')]",
+                    "name": "[parameters('functionappCI1')]",
+                    "env": [
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "azurewebjobsstorage"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~4"
+                        }
+                    ]
+                }
+            ]
+        }
+	    }
+    }
+  ]
+}

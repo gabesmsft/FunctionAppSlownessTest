@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35919.96 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FunctionAppSlownessTest", "FunctionAppSlownessTest\FunctionAppSlownessTest.csproj", "{E86A8EF1-27E7-4985-8B68-883E90128BC4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E86A8EF1-27E7-4985-8B68-883E90128BC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E86A8EF1-27E7-4985-8B68-883E90128BC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E86A8EF1-27E7-4985-8B68-883E90128BC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E86A8EF1-27E7-4985-8B68-883E90128BC4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {26EC0127-5F75-4777-AC68-1F93565B872C}
+	EndGlobalSection
+EndGlobal
