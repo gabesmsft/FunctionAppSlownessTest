@@ -117,7 +117,7 @@
             "containers": [
                 {
                     "image": "[parameters('functionappCI1')]",
-                    "name": "[parameters('functionappCI1')]",
+                    "name": "[parameters('functionapp1')]",
                     "env": [
                         {
                             "name": "AzureWebJobsStorage",
